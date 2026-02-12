@@ -178,37 +178,26 @@ const RecipeParserApp = () => {
             const oembedUrl = `https://api.instagram.com/oembed/?url=${encodeURIComponent(inputText)}`;
             let data = null;
 
-            // Try Primary Proxy
+            // Try Primary Proxy (NoEmbed) - Supports CORS natively
             try {
-                const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(oembedUrl)}`);
-                if (res.ok) {
-                    data = await res.json();
+                const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(inputText)}`);
+                const json = await res.json();
+                if (json.title) {
+                    data = json;
                 } else {
-                    throw new Error('Primary proxy failed');
+                    throw new Error('No title in noembed');
                 }
             } catch (err) {
                 console.log("Primary OEmbed failed, trying fallback 1...");
                 try {
-                    // Try Fallback Proxy 1 (NoEmbed) - Supports CORS natively
-                    const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(inputText)}`);
-                    const json = await res.json();
-                    if (json.title) {
-                        data = json;
-                    } else {
-                        throw new Error('No title in noembed');
+                    // Try Fallback Proxy 1 (CodeTabs) - Fetch HTML directly if API fails
+                    const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(inputText)}`);
+                    if (res.ok) {
+                        htmlText = await res.text();
+                        console.log("Fetched Instagram HTML via CodeTabs fallback");
                     }
                 } catch (err2) {
-                    console.log("Fallback 1 failed, trying fallback 2...");
-                    try {
-                        // Try Fallback Proxy 2 (CodeTabs) - Fetch HTML directly if API fails
-                        const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(inputText)}`);
-                        if (res.ok) {
-                            htmlText = await res.text();
-                            console.log("Fetched Instagram HTML via CodeTabs fallback");
-                        }
-                    } catch (err3) {
-                        console.log("All OEmbed proxies failed");
-                    }
+                    console.log("All OEmbed proxies failed");
                 }
             }
 
@@ -227,23 +216,18 @@ const RecipeParserApp = () => {
         
         if (!htmlText && !inputText.includes('instagram.com/')) {          
           try {
-          // Primary: corsproxy.io
-          const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(inputText)}`);
-          const text = await response.text();
-          if (text.includes('Response exceeds 1MB size limit')) throw new Error('Size limit exceeded');
-          htmlText = text;
+          // Primary: allorigins.win
+          const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(inputText)}`);
+          const data = await response.json();
+          htmlText = data.contents;
         } catch (err) {
           console.log("Primary proxy failed, trying fallback:", err);
            try {
-            // Fallback: allorigins.win
-            const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(inputText)}`);
-            const data = await response.json();
-            htmlText = data.contents;
-          } catch (err2) {
-            console.log("AllOrigins failed, trying CodeTabs...", err2);
             // Fallback: CodeTabs
             const response = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(inputText)}`);
             htmlText = await response.text();
+          } catch (err2) {
+            console.log("CodeTabs failed...", err2);
           }
         }
         }
