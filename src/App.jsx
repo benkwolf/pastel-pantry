@@ -31,6 +31,14 @@ const RecipeParserApp = () => {
   // Helper to parse number from string (fraction or decimal)
   const parseNumber = (str) => {
     try {
+      // Handle unicode fractions
+      const unicodeFractions = {
+        '½': 0.5, '⅓': 0.333, '⅔': 0.666, '¼': 0.25, '¾': 0.75,
+        '⅕': 0.2, '⅖': 0.4, '⅗': 0.6, '⅘': 0.8, '⅙': 0.166,
+        '⅚': 0.833, '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875
+      };
+      if (unicodeFractions[str]) return unicodeFractions[str];
+
       if (str.includes('/')) {
         const [num, den] = str.split('/').map(Number);
         if (!isNaN(num) && !isNaN(den) && den !== 0) return num / den;
@@ -667,13 +675,13 @@ const RecipeParserApp = () => {
                   <div className="flex gap-2">
                     <button 
                       onClick={handleSave}
-                      className="hidden md:flex bg-rose-100 hover:bg-rose-200 text-rose-600 py-2 px-4 rounded-lg text-sm font-bold items-center gap-2 transition-colors"
+                      className="flex bg-rose-100 hover:bg-rose-200 text-rose-600 py-2 px-4 rounded-lg text-sm font-bold items-center gap-2 transition-colors"
                     >
                       <Save size={16} /> Save
                     </button>
                     <button 
                       onClick={handleReset}
-                      className="hidden md:flex bg-stone-100 hover:bg-stone-200 text-stone-500 py-2 px-4 rounded-lg text-sm font-medium items-center gap-2 transition-colors"
+                      className="flex bg-stone-100 hover:bg-stone-200 text-stone-500 py-2 px-4 rounded-lg text-sm font-medium items-center gap-2 transition-colors"
                     >
                       <RefreshCw size={16} /> New
                     </button>
