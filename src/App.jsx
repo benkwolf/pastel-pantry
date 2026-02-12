@@ -154,19 +154,17 @@ const RecipeParserApp = () => {
       setIsLoading(true);
       let htmlText = '';
 
-      // 1. Try Local Backend Server (Puppeteer) ONLY for Instagram (as requested for speed on others)
-      if (inputText.includes('instagram.com/')) {
-        try {
-          // Try the Vercel Serverless Function (relative path /api/scrape)
-          const res = await fetch(`/api/scrape?url=${encodeURIComponent(inputText)}`);
-          if (res.ok) {
-              const data = await res.json();
-              htmlText = data.html;
-              console.log("Fetched HTML via Vercel Serverless Function");
-          }
-        } catch (e) {
-          console.log("Serverless function failed, falling back to public proxies...");
+      // 1. Try Vercel Serverless Function (Puppeteer) FIRST for ALL URLs
+      try {
+        // Try the Vercel Serverless Function (relative path /api/scrape)
+        const res = await fetch(`/api/scrape?url=${encodeURIComponent(inputText)}`);
+        if (res.ok) {
+            const data = await res.json();
+            htmlText = data.html;
+            console.log("Fetched HTML via Vercel Serverless Function");
         }
+      } catch (e) {
+        console.log("Serverless function failed, falling back to public proxies...");
       }
 
       try {
