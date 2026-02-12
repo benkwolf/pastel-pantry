@@ -57,16 +57,20 @@ const RecipeParserApp = () => {
     const scaledIngredients = parsedRecipe.ingredients.map(ing => {
       if (ing.isHeader) return ing;
       
-      const parts = ing.text.split(' ');
-      if (parts.length > 0) {
-        const quantity = parts[0];
-        const val = parseNumber(quantity);
+      // Regex to capture the leading number (integer, decimal, fraction, unicode)
+      // and any attached unit characters immediately following it.
+      const match = ing.text.match(/^([0-9½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞./]+)(.*)$/);
+      
+      if (match) {
+        const numberPart = match[1];
+        const restOfLine = match[2];
+        const val = parseNumber(numberPart);
         
         if (val !== null) {
            const newVal = val * scaleFactor;
            // Format: Remove trailing zeros, max 2 decimals
            const scaledQuantity = Number(newVal.toFixed(2)).toString();
-           return { ...ing, text: `${scaledQuantity} ${parts.slice(1).join(' ')}` };
+           return { ...ing, text: `${scaledQuantity}${restOfLine}` };
         }
       }
       return ing;
