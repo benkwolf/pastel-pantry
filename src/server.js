@@ -29,6 +29,9 @@ app.get('/scrape', async (req, res) => {
     
     // Set a realistic User-Agent to bypass basic bot detection
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'en-US,en;q=0.9'
+    });
 
     // Navigate to the URL and wait for network to be idle (handles dynamic content)
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });

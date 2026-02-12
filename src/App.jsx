@@ -265,7 +265,7 @@ const RecipeParserApp = () => {
           }
 
           // Check for Instagram Login Wall (Check this AFTER trying to extract data via regex)
-          if (inputText.includes('instagram.com') && (htmlText.includes('Log in to Instagram') || htmlText.includes('Create an account'))) {
+          if (inputText.includes('instagram.com') && (htmlText.includes('Log in to Instagram') || htmlText.includes('Create an account') || htmlText.includes('Welcome back to Instagram'))) {
              console.log("Login wall detected");
              setNotification("Instagram blocked the request. Please paste the caption text manually.");
              setIsLoading(false);
