@@ -59,18 +59,20 @@ const RecipeParserApp = () => {
       
       // Regex to capture the leading number (integer, decimal, fraction, unicode)
       // and any attached unit characters immediately following it.
-      const match = ing.text.match(/^([0-9½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞./]+)(.*)$/);
+      // Updated to allow optional prefix text (e.g. "About 1 cup")
+      const match = ing.text.match(/^([^0-9½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]*)([0-9½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞./]+)(.*)$/);
       
       if (match) {
-        const numberPart = match[1];
-        const restOfLine = match[2];
+        const prefix = match[1];
+        const numberPart = match[2];
+        const restOfLine = match[3];
         const val = parseNumber(numberPart);
         
         if (val !== null) {
            const newVal = val * scaleFactor;
            // Format: Remove trailing zeros, max 2 decimals
            const scaledQuantity = Number(newVal.toFixed(2)).toString();
-           return { ...ing, text: `${scaledQuantity}${restOfLine}` };
+           return { ...ing, text: `${prefix}${scaledQuantity}${restOfLine}` };
         }
       }
       return ing;
