@@ -156,21 +156,16 @@ const RecipeParserApp = () => {
 
       // 1. Try Local Backend Server (Puppeteer) ONLY for Instagram (as requested for speed on others)
       if (inputText.includes('instagram.com/')) {
-        // Only try local server if we are on localhost or a local IP (prevents errors on Vercel)
-        const isLocal = window.location.hostname === 'localhost' || 
-                        window.location.hostname.match(/^127\.|^10\.|^172\.(1[6-9]|2[0-9]|3[0-1])\.|^192\.168\./);
-
-        if (isLocal) {
-          try {
-            const res = await fetch(`http://${window.location.hostname}:3000/scrape?url=${encodeURIComponent(inputText)}`);
-            if (res.ok) {
-                const data = await res.json();
-                htmlText = data.html;
-                console.log("Fetched HTML via Local Server");
-            }
-          } catch (e) {
-            console.log("Local server not running or failed, falling back to public proxies...");
+        try {
+          // Try the Vercel Serverless Function (relative path /api/scrape)
+          const res = await fetch(`/api/scrape?url=${encodeURIComponent(inputText)}`);
+          if (res.ok) {
+              const data = await res.json();
+              htmlText = data.html;
+              console.log("Fetched HTML via Vercel Serverless Function");
           }
+        } catch (e) {
+          console.log("Serverless function failed, falling back to public proxies...");
         }
       }
 
@@ -230,7 +225,7 @@ const RecipeParserApp = () => {
 
         console.log("Attempting to fetch URL via proxy...");
         
-        if (!htmlText && !inputText.includes('instagram.com/')) {
+        if (!htmlText && !inputText.includes('instagram.com/')) {          
           try {
           // Primary: corsproxy.io
           const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(inputText)}`);
@@ -239,7 +234,7 @@ const RecipeParserApp = () => {
           htmlText = text;
         } catch (err) {
           console.log("Primary proxy failed, trying fallback:", err);
-          try {
+           try {
             // Fallback: allorigins.win
             const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(inputText)}`);
             const data = await response.json();
